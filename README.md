@@ -1,4 +1,4 @@
-# MindMitra - Mental Health Support Platform
+#Mental Health Support Platform
 
 A comprehensive mental health support platform designed specifically for students, providing a safe space for emotional well-being, peer support, and professional counseling.
 
@@ -42,7 +42,7 @@ A comprehensive mental health support platform designed specifically for student
 1. **Clone the repository**
    ```bash
    git clone <repository-url>
-   cd mindmitra
+   cd Mental-Health-Support-Platform
    ```
 
 2. **Install dependencies**
@@ -60,7 +60,7 @@ A comprehensive mental health support platform designed specifically for student
    GOOGLE_CLIENT_SECRET=<your-google-client-secret>
    PORT=3000
    NODE_ENV=production
-   SESSION_SECRET=mindmitra_session_secret_2024_secure
+   
    ```
 
 4. **Start the application**
