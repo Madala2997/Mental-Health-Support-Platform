@@ -78,7 +78,7 @@ A comprehensive mental health support platform designed specifically for student
 ## 📁 Project Structure
 
 ```
-mindmitra/
+Mental-Health-Support-Platform/
 ├── models/           # MongoDB schemas
 │   ├── User.js
 │   ├── Resource.js
