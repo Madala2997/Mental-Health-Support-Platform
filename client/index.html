@@ -1,0 +1,507 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MindMitra - Mental Health Support Platform</title>
+    <link rel="stylesheet" href="styles.css">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://accounts.google.com/gsi/client" async defer></script>
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar" id="navbar">
+        <div class="nav-container">
+            <div class="nav-brand">
+                <i class="fas fa-heart"></i>
+                <span>MindMitra</span>
+            </div>
+            <div class="nav-menu" id="nav-menu">
+                <a href="#home" class="nav-link active" data-page="home">
+                    <i class="fas fa-home"></i> Home
+                </a>
+                <a href="#resources" class="nav-link" data-page="resources">
+                    <i class="fas fa-book"></i> Resources
+                </a>
+                <a href="#journal" class="nav-link" data-page="journal">
+                    <i class="fas fa-journal-whills"></i> Journal
+                </a>
+                <a href="#forum" class="nav-link" data-page="forum">
+                    <i class="fas fa-comments"></i> Forum
+                </a>
+                <a href="#mood" class="nav-link" data-page="mood">
+                    <i class="fas fa-smile"></i> Mood Tracker
+                </a>
+                <a href="#chat" class="nav-link" data-page="chat">
+                    <i class="fas fa-comment-medical"></i> Chat
+                </a>
+                <div class="nav-user" id="nav-user" style="display: none;">
+                    <div class="user-dropdown">
+                        <img src="https://via.placeholder.com/32" alt="Profile" class="user-avatar" id="user-avatar">
+                        <span class="user-name" id="user-name">User</span>
+                        <i class="fas fa-chevron-down"></i>
+                        <div class="dropdown-menu">
+                            <a href="#profile" data-page="profile"><i class="fas fa-user"></i> Profile</a>
+                            <a href="#" onclick="logout()"><i class="fas fa-sign-out-alt"></i> Logout</a>
+                        </div>
+                    </div>
+                </div>
+                <div class="auth-buttons" id="auth-buttons">
+                    <button class="btn btn-outline" onclick="showLogin()">Login</button>
+                    <button class="btn btn-primary" onclick="showRegister()">Sign Up</button>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <main class="main-content">
+        <!-- Home Page -->
+        <section id="home-page" class="page active">
+            <div class="hero">
+                <div class="hero-content">
+                    <h1>Welcome to MindMitra</h1>
+                    <p>Your trusted companion for mental health and well-being. Connect, share, and grow in a safe, supportive environment.</p>
+                    <div class="hero-buttons">
+                        <button class="btn btn-primary btn-large" onclick="showRegister()">Get Started</button>
+                        <button class="btn btn-outline btn-large" onclick="navigateToPage('resources')">Explore Resources</button>
+                    </div>
+                </div>
+                <div class="hero-image">
+                    <i class="fas fa-heart-pulse"></i>
+                </div>
+            </div>
+
+            <div class="features">
+                <div class="container">
+                    <h2>How MindMitra Supports You</h2>
+                    <div class="features-grid">
+                        <div class="feature-card">
+                            <i class="fas fa-book-open"></i>
+                            <h3>Resource Hub</h3>
+                            <p>Access curated mental health articles, videos, and self-help guides</p>
+                        </div>
+                        <div class="feature-card">
+                            <i class="fas fa-journal-whills"></i>
+                            <h3>Anonymous Journaling</h3>
+                            <p>Share your feelings safely and connect with others anonymously</p>
+                        </div>
+                        <div class="feature-card">
+                            <i class="fas fa-users"></i>
+                            <h3>Peer Support</h3>
+                            <p>Join discussions and find support from fellow students</p>
+                        </div>
+                        <div class="feature-card">
+                            <i class="fas fa-comment-medical"></i>
+                            <h3>Professional Chat</h3>
+                            <p>Connect with verified counselors for confidential support</p>
+                        </div>
+                        <div class="feature-card">
+                            <i class="fas fa-chart-line"></i>
+                            <h3>Mood Tracking</h3>
+                            <p>Monitor your emotional well-being with daily mood logs</p>
+                        </div>
+                        <div class="feature-card">
+                            <i class="fas fa-shield-alt"></i>
+                            <h3>Safe Environment</h3>
+                            <p>Moderated platform ensuring positive and supportive interactions</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Resources Page -->
+        <section id="resources-page" class="page">
+            <div class="container">
+                <div class="page-header">
+                    <h1>Mental Health Resources</h1>
+                    <p>Discover helpful articles, videos, and guides for your mental well-being</p>
+                </div>
+
+                <div class="filters">
+                    <div class="filter-group">
+                        <select id="resource-category">
+                            <option value="">All Categories</option>
+                            <option value="stress-management">Stress Management</option>
+                            <option value="anxiety">Anxiety</option>
+                            <option value="motivation">Motivation</option>
+                            <option value="depression">Depression</option>
+                            <option value="self-care">Self Care</option>
+                            <option value="mindfulness">Mindfulness</option>
+                            <option value="academic-pressure">Academic Pressure</option>
+                        </select>
+                    </div>
+                    <div class="filter-group">
+                        <select id="resource-type">
+                            <option value="">All Types</option>
+                            <option value="article">Articles</option>
+                            <option value="video">Videos</option>
+                            <option value="guide">Guides</option>
+                            <option value="exercise">Exercises</option>
+                        </select>
+                    </div>
+                    <div class="search-group">
+                        <input type="text" id="resource-search" placeholder="Search resources...">
+                        <button onclick="searchResources()"><i class="fas fa-search"></i></button>
+                    </div>
+                </div>
+
+                <div id="resources-grid" class="resources-grid">
+                    <!-- Resources will be loaded here -->
+                </div>
+            </div>
+        </section>
+
+        <!-- Journal Page -->
+        <section id="journal-page" class="page">
+            <div class="container">
+                <div class="page-header">
+                    <h1>Anonymous Journal</h1>
+                    <p>Share your thoughts and feelings in a safe, supportive space</p>
+                </div>
+
+                <div class="journal-actions">
+                    <button class="btn btn-primary" onclick="showJournalForm()">
+                        <i class="fas fa-plus"></i> Write Entry
+                    </button>
+                    <button class="btn btn-outline" onclick="loadMyEntries()">
+                        <i class="fas fa-user"></i> My Entries
+                    </button>
+                </div>
+
+                <div id="journal-form" class="journal-form" style="display: none;">
+                    <form onsubmit="submitJournalEntry(event)">
+                        <textarea id="journal-content" placeholder="Share what's on your mind..." required></textarea>
+                        <div class="form-row">
+                            <div class="mood-selector">
+                                <label>How are you feeling?</label>
+                                <div class="mood-options">
+                                    <input type="radio" name="mood" value="very-sad" id="mood-1">
+                                    <label for="mood-1">😢</label>
+                                    <input type="radio" name="mood" value="sad" id="mood-2">
+                                    <label for="mood-2">😔</label>
+                                    <input type="radio" name="mood" value="neutral" id="mood-3">
+                                    <label for="mood-3">😐</label>
+                                    <input type="radio" name="mood" value="happy" id="mood-4">
+                                    <label for="mood-4">😊</label>
+                                    <input type="radio" name="mood" value="very-happy" id="mood-5">
+                                    <label for="mood-5">😄</label>
+                                </div>
+                            </div>
+                            <div class="form-options">
+                                <label>
+                                    <input type="checkbox" id="anonymous-post" checked>
+                                    Post anonymously
+                                </label>
+                            </div>
+                        </div>
+                        <div class="form-actions">
+                            <button type="submit" class="btn btn-primary">Share</button>
+                            <button type="button" class="btn btn-outline" onclick="hideJournalForm()">Cancel</button>
+                        </div>
+                    </form>
+                </div>
+
+                <div id="journal-entries" class="journal-entries">
+                    <!-- Journal entries will be loaded here -->
+                </div>
+            </div>
+        </section>
+
+        <!-- Forum Page -->
+        <section id="forum-page" class="page">
+            <div class="container">
+                <div class="page-header">
+                    <h1>Community Forum</h1>
+                    <p>Connect with peers and share experiences</p>
+                </div>
+
+                <div class="forum-actions">
+                    <button class="btn btn-primary" onclick="showForumForm()">
+                        <i class="fas fa-plus"></i> New Discussion
+                    </button>
+                    <select id="forum-category">
+                        <option value="">All Categories</option>
+                        <option value="general">General</option>
+                        <option value="academic-stress">Academic Stress</option>
+                        <option value="relationships">Relationships</option>
+                        <option value="anxiety">Anxiety</option>
+                        <option value="depression">Depression</option>
+                        <option value="self-care">Self Care</option>
+                        <option value="motivation">Motivation</option>
+                    </select>
+                </div>
+
+                <div id="forum-form" class="forum-form" style="display: none;">
+                    <form onsubmit="submitForumPost(event)">
+                        <input type="text" id="forum-title" placeholder="Discussion title..." required>
+                        <textarea id="forum-content" placeholder="Share your thoughts..." required></textarea>
+                        <div class="form-row">
+                            <select id="forum-post-category" required>
+                                <option value="">Select Category</option>
+                                <option value="general">General</option>
+                                <option value="academic-stress">Academic Stress</option>
+                                <option value="relationships">Relationships</option>
+                                <option value="anxiety">Anxiety</option>
+                                <option value="depression">Depression</option>
+                                <option value="self-care">Self Care</option>
+                                <option value="motivation">Motivation</option>
+                            </select>
+                            <label>
+                                <input type="checkbox" id="forum-anonymous">
+                                Post anonymously
+                            </label>
+                        </div>
+                        <div class="form-actions">
+                            <button type="submit" class="btn btn-primary">Post</button>
+                            <button type="button" class="btn btn-outline" onclick="hideForumForm()">Cancel</button>
+                        </div>
+                    </form>
+                </div>
+
+                <div id="forum-posts" class="forum-posts">
+                    <!-- Forum posts will be loaded here -->
+                </div>
+            </div>
+        </section>
+
+        <!-- Mood Tracker Page -->
+        <section id="mood-page" class="page">
+            <div class="container">
+                <div class="page-header">
+                    <h1>Mood Tracker</h1>
+                    <p>Track your daily mood and emotional patterns</p>
+                </div>
+
+                <div class="mood-today">
+                    <h3>How are you feeling today?</h3>
+                    <div class="mood-input">
+                        <div class="mood-slider">
+                            <input type="range" id="mood-range" min="1" max="5" value="3">
+                            <div class="mood-labels">
+                                <span>😢</span>
+                                <span>😔</span>
+                                <span>😐</span>
+                                <span>😊</span>
+                                <span>😄</span>
+                            </div>
+                        </div>
+                        <textarea id="mood-notes" placeholder="Any notes about your mood today?"></textarea>
+                        <div class="mood-factors">
+                            <label>What's affecting your mood?</label>
+                            <div class="factor-tags">
+                                <label><input type="checkbox" value="sleep"> Sleep</label>
+                                <label><input type="checkbox" value="exercise"> Exercise</label>
+                                <label><input type="checkbox" value="social"> Social</label>
+                                <label><input type="checkbox" value="academic"> Academic</label>
+                                <label><input type="checkbox" value="family"> Family</label>
+                                <label><input type="checkbox" value="health"> Health</label>
+                                <label><input type="checkbox" value="weather"> Weather</label>
+                            </div>
+                        </div>
+                        <button class="btn btn-primary" onclick="saveMood()">Save Mood</button>
+                    </div>
+                </div>
+
+                <div class="mood-analytics">
+                    <div class="analytics-grid">
+                        <div class="analytics-card">
+                            <h4>Mood Trend</h4>
+                            <div id="mood-chart" class="chart-placeholder">
+                                Chart will be displayed here
+                            </div>
+                        </div>
+                        <div class="analytics-card">
+                            <h4>Average Mood</h4>
+                            <div class="stat-display" id="average-mood">3.2</div>
+                        </div>
+                        <div class="analytics-card">
+                            <h4>Streak</h4>
+                            <div class="stat-display" id="mood-streak">7 days</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Chat Page -->
+        <section id="chat-page" class="page">
+            <div class="container">
+                <div class="page-header">
+                    <h1>Support Chat</h1>
+                    <p>Connect with counselors and peer mentors</p>
+                </div>
+
+                <div class="chat-options">
+                    <div class="chat-option-card" onclick="startCounselorChat()">
+                        <i class="fas fa-user-md"></i>
+                        <h3>Talk to a Counselor</h3>
+                        <p>Get professional support from verified counselors</p>
+                    </div>
+                    <div class="chat-option-card" onclick="showPeerChat()">
+                        <i class="fas fa-users"></i>
+                        <h3>Peer Support</h3>
+                        <p>Connect with fellow students for mutual support</p>
+                    </div>
+                </div>
+
+                <div id="chat-list" class="chat-list">
+                    <h3>Your Conversations</h3>
+                    <div id="chat-conversations">
+                        <!-- Chat conversations will be loaded here -->
+                    </div>
+                </div>
+
+                <div id="chat-window" class="chat-window" style="display: none;">
+                    <div class="chat-header">
+                        <div class="chat-info">
+                            <img src="https://via.placeholder.com/40" alt="Avatar" class="chat-avatar">
+                            <div>
+                                <h4 id="chat-partner-name">Counselor</h4>
+                                <span id="chat-partner-status">Online</span>
+                            </div>
+                        </div>
+                        <button class="btn btn-outline btn-small" onclick="closeChatWindow()">
+                            <i class="fas fa-times"></i>
+                        </button>
+                    </div>
+                    <div class="chat-messages" id="chat-messages">
+                        <!-- Messages will be displayed here -->
+                    </div>
+                    <div class="chat-input">
+                        <input type="text" id="message-input" placeholder="Type your message...">
+                        <button onclick="sendMessage()"><i class="fas fa-paper-plane"></i></button>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Profile Page -->
+        <section id="profile-page" class="page">
+            <div class="container">
+                <div class="page-header">
+                    <h1>Profile</h1>
+                    <p>Manage your account and preferences</p>
+                </div>
+
+                <div class="profile-content">
+                    <div class="profile-card">
+                        <div class="profile-avatar">
+                            <img src="https://via.placeholder.com/100" alt="Profile" id="profile-avatar">
+                            <button class="btn btn-outline btn-small">Change Photo</button>
+                        </div>
+                        <form id="profile-form" onsubmit="updateProfile(event)">
+                            <div class="form-group">
+                                <label>Name</label>
+                                <input type="text" id="profile-name" required>
+                            </div>
+                            <div class="form-group">
+                                <label>Email</label>
+                                <input type="email" id="profile-email" readonly>
+                            </div>
+                            <div class="form-group">
+                                <label>Bio</label>
+                                <textarea id="profile-bio" placeholder="Tell us about yourself..."></textarea>
+                            </div>
+                            <div class="form-group">
+                                <label>Year</label>
+                                <select id="profile-year">
+                                    <option value="">Select Year</option>
+                                    <option value="1st">1st Year</option>
+                                    <option value="2nd">2nd Year</option>
+                                    <option value="3rd">3rd Year</option>
+                                    <option value="4th">4th Year</option>
+                                    <option value="Graduate">Graduate</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label>Department</label>
+                                <input type="text" id="profile-department" placeholder="Your department">
+                            </div>
+                            <button type="submit" class="btn btn-primary">Update Profile</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- Auth Modals -->
+    <div id="auth-modal" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="closeAuthModal()">&times;</span>
+            
+            <!-- Login Form -->
+            <div id="login-form" class="auth-form">
+                <h2>Welcome Back</h2>
+                <form onsubmit="login(event)">
+                    <div class="form-group">
+                        <input type="email" id="login-email" placeholder="Email" required>
+                    </div>
+                    <div class="form-group">
+                        <input type="password" id="login-password" placeholder="Password" required>
+                    </div>
+                    <button type="submit" class="btn btn-primary btn-full">Login</button>
+                </form>
+                
+                <div class="auth-divider">
+                    <span>or</span>
+                </div>
+                
+                <div id="google-signin-button"></div>
+                
+                <p class="auth-switch">
+                    Don't have an account? <a href="#" onclick="showRegister()">Sign up</a>
+                </p>
+            </div>
+
+            <!-- Register Form -->
+            <div id="register-form" class="auth-form" style="display: none;">
+                <h2>Join MindMitra</h2>
+                <form onsubmit="register(event)">
+                    <div class="form-group">
+                        <input type="text" id="register-name" placeholder="Full Name" required>
+                    </div>
+                    <div class="form-group">
+                        <input type="email" id="register-email" placeholder="Email" required>
+                    </div>
+                    <div class="form-group">
+                        <input type="password" id="register-password" placeholder="Password" required>
+                    </div>
+                    <div class="form-group">
+                        <select id="register-role">
+                            <option value="student">Student</option>
+                            <option value="counselor">Counselor</option>
+                        </select>
+                    </div>
+                    <button type="submit" class="btn btn-primary btn-full">Sign Up</button>
+                </form>
+                
+                <div class="auth-divider">
+                    <span>or</span>
+                </div>
+                
+                <div id="google-signup-button"></div>
+                
+                <p class="auth-switch">
+                    Already have an account? <a href="#" onclick="showLogin()">Login</a>
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Loading Spinner -->
+    <div id="loading" class="loading" style="display: none;">
+        <div class="spinner"></div>
+    </div>
+
+    <!-- Toast Notifications -->
+    <div id="toast-container" class="toast-container"></div>
+
+    <!-- Scripts -->
+    <script src="/socket.io/socket.io.js"></script>
+    <script src="script.js"></script>
+</body>
+</html>
