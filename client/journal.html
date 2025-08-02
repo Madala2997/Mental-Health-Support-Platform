@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Journal - MindMitra</title>
+    <link rel="stylesheet" href="/styles.css">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <nav class="navbar">
+        <div class="nav-container">
+            <div class="nav-brand">
+                <i class="fas fa-heart"></i>
+                <span>MindMitra</span>
+            </div>
+            <div class="nav-menu">
+                <a href="/" class="nav-link">Home</a>
+                <a href="/resources" class="nav-link">Resources</a>
+                <a href="/journal" class="nav-link active">Journal</a>
+                <a href="/forum" class="nav-link">Forum</a>
+                <a href="/mood" class="nav-link">Mood Tracker</a>
+                <a href="/chat" class="nav-link">Chat</a>
+                <a href="/profile" class="nav-link">Profile</a>
+            </div>
+            <div class="nav-user" id="nav-user" style="display: none;">
+                <img id="user-avatar" src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%23667eea'%3E%3Cpath d='M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z'/%3E%3C/svg%3E" alt="User Avatar" class="user-avatar">
+                <span id="user-name">User</span>
+                <button id="logout-btn" class="btn btn-outline btn-small">Logout</button>
+            </div>
+            <div class="auth-buttons" id="auth-buttons">
+                <a href="/login" class="btn btn-outline">Login</a>
+                <a href="/signup" class="btn btn-primary">Sign Up</a>
+            </div>
+        </div>
+    </nav>
+
+    <main class="main-content">
+        <div class="page-header">
+            <div class="container">
+                <h1><i class="fas fa-journal-whills"></i> Anonymous Journal</h1>
+                <p>Express your thoughts and feelings in a safe, private space</p>
+            </div>
+        </div>
+
+        <section class="journal-section">
+            <div class="container">
+                <div class="journal-form-container">
+                    <form id="journal-form" class="journal-form">
+                        <div class="form-group">
+                            <label for="journal-title">Entry Title (Optional)</label>
+                            <input type="text" id="journal-title" placeholder="Give your entry a title...">
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="journal-mood">How are you feeling?</label>
+                            <select id="journal-mood" required>
+                                <option value="">Select your mood</option>
+                                <option value="very-happy">😄 Very Happy</option>
+                                <option value="happy">😊 Happy</option>
+                                <option value="neutral">😐 Neutral</option>
+                                <option value="sad">😔 Sad</option>
+                                <option value="very-sad">😢 Very Sad</option>
+                                <option value="anxious">😰 Anxious</option>
+                                <option value="stressed">😤 Stressed</option>
+                                <option value="angry">😠 Angry</option>
+                            </select>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="journal-content">Your Thoughts</label>
+                            <textarea id="journal-content" placeholder="Write about your day, your feelings, or anything on your mind..." required></textarea>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label>
+                                <input type="checkbox" id="journal-anonymous" checked>
+                                Keep this entry anonymous
+                            </label>
+                        </div>
+                        
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-save"></i> Save Entry
+                        </button>
+                    </form>
+                </div>
+
+                <div class="journal-entries">
+                    <h2>Your Recent Entries</h2>
+                    <div id="journal-entries-list">
+                        <!-- Journal entries will be loaded here -->
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <div id="loading" class="loading" style="display: none;">
+        <div class="spinner"></div>
+    </div>
+
+    <script src="/script.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            initializeApp();
+            loadJournalEntries();
+            
+            // Handle journal form submission
+            document.getElementById('journal-form').addEventListener('submit', function(e) {
+                e.preventDefault();
+                saveJournalEntry();
+            });
+        });
+
+        function saveJournalEntry() {
+            const title = document.getElementById('journal-title').value;
+            const mood = document.getElementById('journal-mood').value;
+            const content = document.getElementById('journal-content').value;
+            const anonymous = document.getElementById('journal-anonymous').checked;
+
+            if (!mood || !content.trim()) {
+                alert('Please select your mood and write your thoughts.');
+                return;
+            }
+
+            const entry = {
+                title: title || 'Untitled Entry',
+                mood,
+                content: content.trim(),
+                anonymous,
+                date: new Date().toISOString()
+            };
+
+            fetch('/api/journal', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${localStorage.getItem('token')}`
+                },
+                body: JSON.stringify(entry)
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    document.getElementById('journal-form').reset();
+                    document.getElementById('journal-anonymous').checked = true;
+                    loadJournalEntries();
+                    alert('Journal entry saved successfully!');
+                } else {
+                    alert('Failed to save journal entry. Please try again.');
+                }
+            })
+            .catch(error => {
+                console.error('Error saving journal entry:', error);
+                alert('Failed to save journal entry. Please try again.');
+            });
+        }
+
+        function loadJournalEntries() {
+            fetch('/api/journal', {
+                headers: {
+                    'Authorization': `Bearer ${localStorage.getItem('token')}`
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    displayJournalEntries(data.entries);
+                }
+            })
+            .catch(error => {
+                console.error('Error loading journal entries:', error);
+            });
+        }
+
+        function displayJournalEntries(entries) {
+            const container = document.getElementById('journal-entries-list');
+            
+            if (!entries || entries.length === 0) {
+                container.innerHTML = '<p class="no-entries">No journal entries yet. Start writing to see your entries here!</p>';
+                return;
+            }
+
+            container.innerHTML = entries.map(entry => `
+                <div class="journal-entry">
+                    <div class="entry-header">
+                        <h3>${entry.title}</h3>
+                        <div class="entry-meta">
+                            <span class="entry-mood">${getMoodEmoji(entry.mood)}</span>
+                            <span class="entry-date">${formatDate(entry.createdAt)}</span>
+                        </div>
+                    </div>
+                    <div class="entry-content">
+                        ${entry.content.substring(0, 200)}${entry.content.length > 200 ? '...' : ''}
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function getMoodEmoji(mood) {
+            const moodEmojis = {
+                'very-happy': '😄',
+                'happy': '😊',
+                'neutral': '😐',
+                'sad': '😔',
+                'very-sad': '😢',
+                'anxious': '😰',
+                'stressed': '😤',
+                'angry': '😠'
+            };
+            return moodEmojis[mood] || '😐';
+        }
+
+        function formatDate(dateString) {
+            return new Date(dateString).toLocaleDateString('en-US', {
+                year: 'numeric',
+                month: 'short',
+                day: 'numeric',
+                hour: '2-digit',
+                minute: '2-digit'
+            });
+        }
+    </script>
+</body>
+</html>

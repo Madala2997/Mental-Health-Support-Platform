@@ -1,0 +1,546 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard - MindMitra</title>
+    <link rel="stylesheet" href="styles.css">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        .dashboard-welcome {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 60px 0;
+            text-align: center;
+            margin-bottom: 40px;
+        }
+        
+        .welcome-content h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            font-weight: 600;
+        }
+        
+        .welcome-content p {
+            font-size: 1.2rem;
+            opacity: 0.9;
+            margin: 0;
+        }
+        
+        .dashboard-stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-bottom: 40px;
+        }
+        
+        .stat-card {
+            background: white;
+            border-radius: 15px;
+            padding: 30px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+            text-align: center;
+            transition: transform 0.3s;
+        }
+        
+        .stat-card:hover {
+            transform: translateY(-5px);
+        }
+        
+        .stat-card i {
+            font-size: 3rem;
+            color: #667eea;
+            margin-bottom: 15px;
+        }
+        
+        .stat-card h3 {
+            font-size: 2rem;
+            margin-bottom: 5px;
+            color: #333;
+        }
+        
+        .stat-card p {
+            color: #666;
+            margin: 0;
+        }
+        
+        .quick-actions {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+            margin-bottom: 40px;
+        }
+        
+        .action-card {
+            background: white;
+            border-radius: 15px;
+            padding: 30px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+            transition: transform 0.3s;
+        }
+        
+        .action-card:hover {
+            transform: translateY(-5px);
+        }
+        
+        .action-card h3 {
+            color: #333;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .action-card h3 i {
+            color: #667eea;
+        }
+        
+        .action-card p {
+            color: #666;
+            margin-bottom: 20px;
+            line-height: 1.6;
+        }
+        
+        .recent-activity {
+            background: white;
+            border-radius: 15px;
+            padding: 30px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+        
+        .recent-activity h2 {
+            color: #333;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .recent-activity h2 i {
+            color: #667eea;
+        }
+        
+        .activity-item {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            padding: 15px 0;
+            border-bottom: 1px solid #f0f0f0;
+        }
+        
+        .activity-item:last-child {
+            border-bottom: none;
+        }
+        
+        .activity-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: #f8f9ff;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #667eea;
+        }
+        
+        .activity-content {
+            flex: 1;
+        }
+        
+        .activity-content h4 {
+            margin: 0 0 5px 0;
+            color: #333;
+            font-size: 0.9rem;
+        }
+        
+        .activity-content p {
+            margin: 0;
+            color: #666;
+            font-size: 0.8rem;
+        }
+        
+        .mood-widget {
+            background: white;
+            border-radius: 15px;
+            padding: 30px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+            text-align: center;
+        }
+        
+        .mood-widget h3 {
+            color: #333;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
+        
+        .mood-widget h3 i {
+            color: #667eea;
+        }
+        
+        .mood-today {
+            font-size: 4rem;
+            margin-bottom: 10px;
+        }
+        
+        .mood-label {
+            color: #666;
+            font-size: 1.1rem;
+        }
+        
+        .dashboard-grid {
+            display: grid;
+            grid-template-columns: 2fr 1fr;
+            gap: 20px;
+            margin-top: 20px;
+        }
+        
+        @media (max-width: 768px) {
+            .dashboard-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .welcome-content h1 {
+                font-size: 2rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <nav class="navbar">
+        <div class="nav-container">
+            <div class="nav-brand">
+                <i class="fas fa-heart"></i>
+                <span>MindMitra</span>
+            </div>
+            <div class="nav-menu">
+                <a href="/dashboard" class="nav-link active">Dashboard</a>
+                <a href="/resources" class="nav-link">Resources</a>
+                <a href="/journal" class="nav-link">Journal</a>
+                <a href="/forum" class="nav-link">Forum</a>
+                <a href="/mood" class="nav-link">Mood Tracker</a>
+                <a href="/chat" class="nav-link">Chat</a>
+                <a href="/profile" class="nav-link">Profile</a>
+            </div>
+            <div class="nav-user" id="nav-user" style="display: none;">
+                <img id="user-avatar" src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%23667eea'%3E%3Cpath d='M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z'/%3E%3C/svg%3E" alt="User Avatar" class="user-avatar">
+                <span id="user-name">User</span>
+                <button id="logout-btn" class="btn btn-outline btn-small">Logout</button>
+            </div>
+            <div class="auth-buttons" id="auth-buttons">
+                <a href="/login" class="btn btn-outline">Login</a>
+                <a href="/signup" class="btn btn-primary">Sign Up</a>
+            </div>
+        </div>
+    </nav>
+
+    <main class="main-content">
+        <!-- Welcome Section -->
+        <section class="dashboard-welcome">
+            <div class="container">
+                <div class="welcome-content">
+                    <h1 id="welcome-message">Welcome to MindMitra!</h1>
+                    <p id="welcome-subtitle">Your mental wellness journey starts here</p>
+                </div>
+            </div>
+        </section>
+
+        <div class="container">
+            <!-- Dashboard Stats -->
+            <div class="dashboard-stats">
+                <div class="stat-card">
+                    <i class="fas fa-journal-whills"></i>
+                    <h3 id="journal-count">0</h3>
+                    <p>Journal Entries</p>
+                </div>
+                <div class="stat-card">
+                    <i class="fas fa-chart-line"></i>
+                    <h3 id="mood-count">0</h3>
+                    <p>Mood Entries</p>
+                </div>
+                <div class="stat-card">
+                    <i class="fas fa-comments"></i>
+                    <h3 id="forum-count">0</h3>
+                    <p>Forum Posts</p>
+                </div>
+                <div class="stat-card">
+                    <i class="fas fa-comment-medical"></i>
+                    <h3 id="chat-count">0</h3>
+                    <p>Chat Sessions</p>
+                </div>
+            </div>
+
+            <!-- Quick Actions -->
+            <div class="quick-actions">
+                <div class="action-card">
+                    <h3><i class="fas fa-edit"></i> Quick Journal</h3>
+                    <p>Write about your day and track your emotions in a safe, private space.</p>
+                    <a href="/journal" class="btn btn-primary">Start Writing</a>
+                </div>
+                <div class="action-card">
+                    <h3><i class="fas fa-smile"></i> Log Your Mood</h3>
+                    <p>Track how you're feeling today and see your emotional patterns over time.</p>
+                    <a href="/mood" class="btn btn-primary">Track Mood</a>
+                </div>
+                <div class="action-card">
+                    <h3><i class="fas fa-users"></i> Join Discussion</h3>
+                    <p>Connect with peers and share experiences in our supportive community.</p>
+                    <a href="/forum" class="btn btn-primary">Browse Forum</a>
+                </div>
+                <div class="action-card">
+                    <h3><i class="fas fa-comment-medical"></i> Get Support</h3>
+                    <p>Chat with licensed counselors for professional mental health support.</p>
+                    <a href="/chat" class="btn btn-primary">Start Chat</a>
+                </div>
+            </div>
+
+            <!-- Dashboard Grid -->
+            <div class="dashboard-grid">
+                <!-- Recent Activity -->
+                <div class="recent-activity">
+                    <h2><i class="fas fa-clock"></i> Recent Activity</h2>
+                    <div id="recent-activity-list">
+                        <!-- Activity items will be loaded here -->
+                    </div>
+                </div>
+
+                <!-- Today's Mood -->
+                <div class="mood-widget">
+                    <h3><i class="fas fa-heart"></i> Today's Mood</h3>
+                    <div class="mood-today" id="today-mood">😊</div>
+                    <div class="mood-label" id="today-mood-label">Not set yet</div>
+                    <a href="/mood" class="btn btn-outline" style="margin-top: 15px;">Update Mood</a>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <div id="loading" class="loading" style="display: none;">
+        <div class="spinner"></div>
+    </div>
+
+    <script src="script.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            initializeApp();
+            loadDashboardData();
+            
+            // Check for welcome message from URL params
+            const urlParams = new URLSearchParams(window.location.search);
+            const welcomeName = urlParams.get('welcome');
+            const isNewUser = urlParams.get('new') === 'true';
+            
+            if (welcomeName) {
+                showWelcomeMessage(welcomeName, isNewUser);
+                // Clean up URL
+                window.history.replaceState({}, document.title, '/dashboard');
+            }
+        });
+
+        function showWelcomeMessage(name, isNewUser) {
+            const welcomeMsg = document.getElementById('welcome-message');
+            const welcomeSubtitle = document.getElementById('welcome-subtitle');
+            
+            if (isNewUser) {
+                welcomeMsg.textContent = `Welcome to MindMitra, ${name}!`;
+                welcomeSubtitle.textContent = 'Thank you for joining our mental wellness community. Let\'s get started!';
+            } else {
+                welcomeMsg.textContent = `Welcome back, ${name}!`;
+                welcomeSubtitle.textContent = 'Continue your mental wellness journey with us today.';
+            }
+            
+            // Add a subtle animation
+            welcomeMsg.style.opacity = '0';
+            welcomeSubtitle.style.opacity = '0';
+            
+            setTimeout(() => {
+                welcomeMsg.style.transition = 'opacity 1s ease-in';
+                welcomeSubtitle.style.transition = 'opacity 1s ease-in';
+                welcomeMsg.style.opacity = '1';
+                welcomeSubtitle.style.opacity = '1';
+            }, 100);
+        }
+
+        function loadDashboardData() {
+            const token = localStorage.getItem('token');
+            if (!token) {
+                window.location.href = '/login';
+                return;
+            }
+
+            // Load user stats
+            loadUserStats();
+            loadRecentActivity();
+            loadTodaysMood();
+        }
+
+        function loadUserStats() {
+            const token = localStorage.getItem('token');
+            
+            // Load journal count
+            fetch('/api/journal/count', {
+                headers: { 'Authorization': `Bearer ${token}` }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    document.getElementById('journal-count').textContent = data.count || 0;
+                }
+            })
+            .catch(error => console.error('Error loading journal count:', error));
+            
+            // Load mood count
+            fetch('/api/mood/count', {
+                headers: { 'Authorization': `Bearer ${token}` }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    document.getElementById('mood-count').textContent = data.count || 0;
+                }
+            })
+            .catch(error => console.error('Error loading mood count:', error));
+            
+            // Load forum count
+            fetch('/api/forum/count', {
+                headers: { 'Authorization': `Bearer ${token}` }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    document.getElementById('forum-count').textContent = data.count || 0;
+                }
+            })
+            .catch(error => console.error('Error loading forum count:', error));
+            
+            // Load chat count
+            fetch('/api/chat/count', {
+                headers: { 'Authorization': `Bearer ${token}` }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    document.getElementById('chat-count').textContent = data.count || 0;
+                }
+            })
+            .catch(error => console.error('Error loading chat count:', error));
+        }
+
+        function loadRecentActivity() {
+            const token = localStorage.getItem('token');
+            
+            fetch('/api/dashboard/activity', {
+                headers: { 'Authorization': `Bearer ${token}` }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    displayRecentActivity(data.activities);
+                }
+            })
+            .catch(error => {
+                console.error('Error loading recent activity:', error);
+                displayRecentActivity([]);
+            });
+        }
+
+        function displayRecentActivity(activities) {
+            const container = document.getElementById('recent-activity-list');
+            
+            if (!activities || activities.length === 0) {
+                container.innerHTML = `
+                    <div class="activity-item">
+                        <div class="activity-icon">
+                            <i class="fas fa-star"></i>
+                        </div>
+                        <div class="activity-content">
+                            <h4>Welcome to MindMitra!</h4>
+                            <p>Start your mental wellness journey by exploring our features.</p>
+                        </div>
+                    </div>
+                `;
+                return;
+            }
+
+            container.innerHTML = activities.map(activity => `
+                <div class="activity-item">
+                    <div class="activity-icon">
+                        <i class="${getActivityIcon(activity.type)}"></i>
+                    </div>
+                    <div class="activity-content">
+                        <h4>${activity.title}</h4>
+                        <p>${formatDate(activity.date)}</p>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function loadTodaysMood() {
+            const token = localStorage.getItem('token');
+            
+            fetch('/api/mood/today', {
+                headers: { 'Authorization': `Bearer ${token}` }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success && data.mood) {
+                    document.getElementById('today-mood').textContent = getMoodEmoji(data.mood.mood);
+                    document.getElementById('today-mood-label').textContent = getMoodLabel(data.mood.mood);
+                }
+            })
+            .catch(error => console.error('Error loading today\'s mood:', error));
+        }
+
+        function getActivityIcon(type) {
+            const icons = {
+                'journal': 'fas fa-journal-whills',
+                'mood': 'fas fa-smile',
+                'forum': 'fas fa-comments',
+                'chat': 'fas fa-comment-medical',
+                'profile': 'fas fa-user'
+            };
+            return icons[type] || 'fas fa-circle';
+        }
+
+        function getMoodEmoji(mood) {
+            const emojis = {
+                'very-happy': '😄',
+                'happy': '😊',
+                'neutral': '😐',
+                'sad': '😔',
+                'very-sad': '😢',
+                'anxious': '😰',
+                'stressed': '😤',
+                'angry': '😠'
+            };
+            return emojis[mood] || '😊';
+        }
+
+        function getMoodLabel(mood) {
+            const labels = {
+                'very-happy': 'Very Happy',
+                'happy': 'Happy',
+                'neutral': 'Neutral',
+                'sad': 'Sad',
+                'very-sad': 'Very Sad',
+                'anxious': 'Anxious',
+                'stressed': 'Stressed',
+                'angry': 'Angry'
+            };
+            return labels[mood] || 'Happy';
+        }
+
+        function formatDate(dateString) {
+            return new Date(dateString).toLocaleDateString('en-US', {
+                month: 'short',
+                day: 'numeric',
+                hour: '2-digit',
+                minute: '2-digit'
+            });
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,286 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Forum - MindMitra</title>
+    <link rel="stylesheet" href="/styles.css">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <nav class="navbar">
+        <div class="nav-container">
+            <div class="nav-brand">
+                <i class="fas fa-heart"></i>
+                <span>MindMitra</span>
+            </div>
+            <div class="nav-menu">
+                <a href="/" class="nav-link">Home</a>
+                <a href="/resources" class="nav-link">Resources</a>
+                <a href="/journal" class="nav-link">Journal</a>
+                <a href="/forum" class="nav-link active">Forum</a>
+                <a href="/mood" class="nav-link">Mood Tracker</a>
+                <a href="/chat" class="nav-link">Chat</a>
+                <a href="/profile" class="nav-link">Profile</a>
+            </div>
+            <div class="nav-user" id="nav-user" style="display: none;">
+                <img id="user-avatar" src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%23667eea'%3E%3Cpath d='M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z'/%3E%3C/svg%3E" alt="User Avatar" class="user-avatar">
+                <span id="user-name">User</span>
+                <button id="logout-btn" class="btn btn-outline btn-small">Logout</button>
+            </div>
+            <div class="auth-buttons" id="auth-buttons">
+                <a href="/login" class="btn btn-outline">Login</a>
+                <a href="/signup" class="btn btn-primary">Sign Up</a>
+            </div>
+        </div>
+    </nav>
+
+    <main class="main-content">
+        <div class="page-header">
+            <div class="container">
+                <h1><i class="fas fa-comments"></i> Community Forum</h1>
+                <p>Connect with others, share experiences, and find support</p>
+            </div>
+        </div>
+
+        <section class="forum-section">
+            <div class="container">
+                <div class="forum-actions">
+                    <button id="new-post-btn" class="btn btn-primary">
+                        <i class="fas fa-plus"></i> New Discussion
+                    </button>
+                </div>
+
+                <div class="forum-categories">
+                    <button class="category-btn active" data-category="all">All Discussions</button>
+                    <button class="category-btn" data-category="general">General Support</button>
+                    <button class="category-btn" data-category="anxiety">Anxiety</button>
+                    <button class="category-btn" data-category="depression">Depression</button>
+                    <button class="category-btn" data-category="stress">Stress Management</button>
+                    <button class="category-btn" data-category="relationships">Relationships</button>
+                    <button class="category-btn" data-category="academic">Academic Pressure</button>
+                </div>
+
+                <div class="forum-posts" id="forum-posts">
+                    <!-- Forum posts will be loaded here -->
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- New Post Modal -->
+    <div id="new-post-modal" class="modal" style="display: none;">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Start a New Discussion</h2>
+                <button id="close-modal" class="close-btn">&times;</button>
+            </div>
+            <form id="new-post-form">
+                <div class="form-group">
+                    <label for="post-title">Discussion Title</label>
+                    <input type="text" id="post-title" placeholder="What would you like to discuss?" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="post-category">Category</label>
+                    <select id="post-category" required>
+                        <option value="">Select a category</option>
+                        <option value="general">General Support</option>
+                        <option value="anxiety">Anxiety</option>
+                        <option value="depression">Depression</option>
+                        <option value="stress">Stress Management</option>
+                        <option value="relationships">Relationships</option>
+                        <option value="academic">Academic Pressure</option>
+                    </select>
+                </div>
+                
+                <div class="form-group">
+                    <label for="post-content">Your Message</label>
+                    <textarea id="post-content" placeholder="Share your thoughts, ask questions, or offer support..." required></textarea>
+                </div>
+                
+                <div class="form-group">
+                    <label>
+                        <input type="checkbox" id="post-anonymous">
+                        Post anonymously
+                    </label>
+                </div>
+                
+                <div class="modal-actions">
+                    <button type="button" id="cancel-post" class="btn btn-outline">Cancel</button>
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-paper-plane"></i> Post Discussion
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div id="loading" class="loading" style="display: none;">
+        <div class="spinner"></div>
+    </div>
+
+    <script src="/script.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            initializeApp();
+            loadForumPosts();
+            
+            // Modal controls
+            document.getElementById('new-post-btn').addEventListener('click', () => {
+                document.getElementById('new-post-modal').style.display = 'flex';
+            });
+            
+            document.getElementById('close-modal').addEventListener('click', closeModal);
+            document.getElementById('cancel-post').addEventListener('click', closeModal);
+            
+            // Form submission
+            document.getElementById('new-post-form').addEventListener('submit', function(e) {
+                e.preventDefault();
+                createForumPost();
+            });
+            
+            // Category filters
+            document.querySelectorAll('.category-btn').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    document.querySelectorAll('.category-btn').forEach(b => b.classList.remove('active'));
+                    this.classList.add('active');
+                    filterPosts(this.dataset.category);
+                });
+            });
+        });
+
+        function closeModal() {
+            document.getElementById('new-post-modal').style.display = 'none';
+            document.getElementById('new-post-form').reset();
+        }
+
+        function createForumPost() {
+            const title = document.getElementById('post-title').value;
+            const category = document.getElementById('post-category').value;
+            const content = document.getElementById('post-content').value;
+            const anonymous = document.getElementById('post-anonymous').checked;
+
+            if (!title.trim() || !category || !content.trim()) {
+                alert('Please fill in all required fields.');
+                return;
+            }
+
+            const post = {
+                title: title.trim(),
+                category,
+                content: content.trim(),
+                anonymous
+            };
+
+            fetch('/api/forum/posts', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${localStorage.getItem('token')}`
+                },
+                body: JSON.stringify(post)
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    closeModal();
+                    loadForumPosts();
+                    alert('Discussion posted successfully!');
+                } else {
+                    alert('Failed to create discussion. Please try again.');
+                }
+            })
+            .catch(error => {
+                console.error('Error creating forum post:', error);
+                alert('Failed to create discussion. Please try again.');
+            });
+        }
+
+        function loadForumPosts() {
+            fetch('/api/forum/posts')
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    displayForumPosts(data.posts);
+                }
+            })
+            .catch(error => {
+                console.error('Error loading forum posts:', error);
+            });
+        }
+
+        function displayForumPosts(posts) {
+            const container = document.getElementById('forum-posts');
+            
+            if (!posts || posts.length === 0) {
+                container.innerHTML = '<p class="no-posts">No discussions yet. Start the first conversation!</p>';
+                return;
+            }
+
+            container.innerHTML = posts.map(post => `
+                <div class="forum-post" data-category="${post.category}">
+                    <div class="post-header">
+                        <div class="post-info">
+                            <h3 class="post-title">${post.title}</h3>
+                            <div class="post-meta">
+                                <span class="post-category">${getCategoryName(post.category)}</span>
+                                <span class="post-author">${post.anonymous ? 'Anonymous' : post.author?.name || 'Unknown'}</span>
+                                <span class="post-date">${formatDate(post.createdAt)}</span>
+                            </div>
+                        </div>
+                        <div class="post-stats">
+                            <span class="replies-count">
+                                <i class="fas fa-reply"></i> ${post.replies?.length || 0}
+                            </span>
+                        </div>
+                    </div>
+                    <div class="post-content">
+                        ${post.content.substring(0, 300)}${post.content.length > 300 ? '...' : ''}
+                    </div>
+                    <div class="post-actions">
+                        <button class="btn btn-outline btn-small" data-post-id="${post._id}">
+                            <i class="fas fa-reply"></i> Reply
+                        </button>
+                        <button class="btn btn-outline btn-small">
+                            <i class="fas fa-heart"></i> Support
+                        </button>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function filterPosts(category) {
+            const posts = document.querySelectorAll('.forum-post');
+            posts.forEach(post => {
+                if (category === 'all' || post.dataset.category === category) {
+                    post.style.display = 'block';
+                } else {
+                    post.style.display = 'none';
+                }
+            });
+        }
+
+        function getCategoryName(category) {
+            const categoryNames = {
+                'general': 'General Support',
+                'anxiety': 'Anxiety',
+                'depression': 'Depression',
+                'stress': 'Stress Management',
+                'relationships': 'Relationships',
+                'academic': 'Academic Pressure'
+            };
+            return categoryNames[category] || category;
+        }
+
+        function formatDate(dateString) {
+            return new Date(dateString).toLocaleDateString('en-US', {
+                year: 'numeric',
+                month: 'short',
+                day: 'numeric'
+            });
+        }
+    </script>
+</body>
+</html>

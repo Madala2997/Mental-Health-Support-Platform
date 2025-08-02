@@ -1,0 +1,514 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login - MindMitra</title>
+    <link rel="stylesheet" href="https://example.com/styles.css">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://example.com/script.js"></script>
+    <script src="https://accounts.google.com/gsi/client" async defer></script>
+    <style>
+        .auth-page {
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            padding: 20px;
+        }
+        
+        .auth-container {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            padding: 40px;
+            width: 100%;
+            max-width: 450px;
+            text-align: center;
+        }
+        
+        .auth-header {
+            margin-bottom: 30px;
+        }
+        
+        .auth-header h1 {
+            color: #333;
+            margin-bottom: 10px;
+            font-size: 2rem;
+        }
+        
+        .auth-header p {
+            color: #666;
+            margin: 0;
+        }
+        
+        .brand-logo {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 20px;
+            font-size: 1.5rem;
+            font-weight: 600;
+            color: #667eea;
+        }
+        
+        .brand-logo i {
+            margin-right: 10px;
+            font-size: 2rem;
+        }
+        
+        .form-group {
+            margin-bottom: 20px;
+            text-align: left;
+        }
+        
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+            color: #333;
+            font-weight: 500;
+        }
+        
+        .form-group input {
+            width: 100%;
+            padding: 15px;
+            border: 2px solid #e1e5e9;
+            border-radius: 10px;
+            font-size: 16px;
+            transition: border-color 0.3s;
+            box-sizing: border-box;
+        }
+        
+        .form-group input:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+        
+        .btn {
+            width: 100%;
+            padding: 15px;
+            border: none;
+            border-radius: 10px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            margin-bottom: 15px;
+        }
+        
+        .btn-primary {
+            background: #667eea;
+            color: white;
+        }
+        
+        .btn-primary:hover {
+            background: #5a6fd8;
+            transform: translateY(-2px);
+        }
+        
+        .divider {
+            margin: 30px 0;
+            position: relative;
+            text-align: center;
+        }
+        
+        .divider::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 0;
+            right: 0;
+            height: 1px;
+            background: #e1e5e9;
+        }
+        
+        .divider span {
+            background: white;
+            padding: 0 20px;
+            color: #666;
+        }
+        
+        .google-btn {
+            width: 100%;
+            margin-bottom: 20px;
+        }
+        
+        .auth-switch {
+            margin-top: 20px;
+            color: #666;
+        }
+        
+        .auth-switch a {
+            color: #667eea;
+            text-decoration: none;
+            font-weight: 600;
+        }
+        
+        .auth-switch a:hover {
+            text-decoration: underline;
+        }
+        
+        .error-message {
+            background: #fee;
+            color: #c33;
+            padding: 10px;
+            border-radius: 5px;
+            margin-bottom: 20px;
+            display: none;
+        }
+        
+        .success-message {
+            background: #efe;
+            color: #3c3;
+            padding: 10px;
+            border-radius: 5px;
+            margin-bottom: 20px;
+            display: none;
+        }
+        
+        .loading {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.5);
+            z-index: 9999;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .spinner {
+            width: 40px;
+            height: 40px;
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #667eea;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body>
+    <div class="auth-page">
+        <div class="auth-container">
+            <div class="brand-logo">
+                <i class="fas fa-heart"></i>
+                MindMitra
+            </div>
+            
+            <div class="auth-header">
+                <h1>Welcome Back</h1>
+                <p>Sign in to your MindMitra account</p>
+            </div>
+            
+            <div id="error-message" class="error-message"></div>
+            <div id="success-message" class="success-message"></div>
+            
+            <form id="login-form">
+                <div class="form-group">
+                    <label for="email">Email Address</label>
+                    <input type="email" id="email" name="email" required autocomplete="email">
+                </div>
+                
+                <div class="form-group">
+                    <label for="password">Password</label>
+                    <input type="password" id="password" name="password" required autocomplete="current-password">
+                </div>
+                
+                <button type="submit" class="btn btn-primary">
+                    <i class="fas fa-sign-in-alt"></i> Sign In
+                </button>
+            </form>
+            
+            <div class="divider">
+                <span>or</span>
+            </div>
+            
+            <div id="google-signin-btn" class="google-btn"></div>
+            
+            <div class="auth-switch">
+                Don't have an account? <a href="signup.html">Sign up here</a>
+            </div>
+        </div>
+    </div>
+    
+    <div id="loading" class="loading">
+        <div class="spinner"></div>
+    </div>
+    
+    <script>
+        let currentUser = null;
+        
+        // Initialize Google Auth
+        function initializeGoogleAuth() {
+            if (typeof google !== 'undefined') {
+                fetch('/api/config/google')
+                    .then(response => response.json())
+                    .then(config => {
+                        google.accounts.id.initialize({
+                            client_id: config.clientId,
+                            callback: handleGoogleSignIn,
+                            auto_select: false,
+                            cancel_on_tap_outside: true
+                        });
+
+                        google.accounts.id.renderButton(
+                            document.getElementById('google-signin-button'),
+                            { 
+                                theme: 'outline', 
+                                size: 'large', 
+                                width: '100%',
+                                text: 'signin_with',
+                                shape: 'rectangular'
+                            }
+                        );
+                        
+                        console.log('Google OAuth initialized successfully');
+                    })
+                    .catch(error => {
+                        console.error('Failed to fetch Google OAuth config:', error);
+                        document.getElementById('google-signin-button').style.display = 'none';
+                    });
+            } else {
+                console.warn('Google API not loaded');
+                document.getElementById('google-signin-button').style.display = 'none';
+            }
+        }
+        
+        // Handle Google Sign In
+        function handleGoogleSignIn(response) {
+            showLoading();
+            
+            fetch('/api/auth/google', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    googleToken: response.credential
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                hideLoading();
+                if (data.token) {
+                    localStorage.setItem('token', data.token);
+                    showSuccess(`Welcome back, ${data.user.name}!`);
+                    setTimeout(() => {
+                        window.location.href = `/dashboard?welcome=${encodeURIComponent(data.user.name)}&new=false`;
+                    }, 1500);
+                } else {
+                    showError(data.message || 'Google sign-in failed');
+                }
+            })
+            .catch(error => {
+                hideLoading();
+                console.error('Google sign-in error:', error);
+                showError('Google sign-in failed. Please try again.');
+            });
+        }
+        
+        // Handle form login
+        document.getElementById('login-form').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+            
+            showLoading();
+            
+            fetch('/api/auth/login', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ email, password })
+            })
+            .then(response => response.json())
+            .then(data => {
+                hideLoading();
+                if (data.token) {
+                    localStorage.setItem('token', data.token);
+                    showSuccess('Login successful!');
+                    setTimeout(() => {
+                        window.location.href = `/dashboard?welcome=${encodeURIComponent(data.user.name)}&new=false`;
+                    }, 1500);
+                } else {
+                    showError(data.message || 'Login failed');
+                }
+            })
+            .catch(error => {
+                hideLoading();
+                console.error('Login error:', error);
+                showError('Login failed. Please try again.');
+            });
+        });
+        
+        // Utility functions
+        function showLoading() {
+            document.getElementById('loading').style.display = 'flex';
+            const submitBtn = document.querySelector('.google-btn');
+            if (submitBtn) {
+                submitBtn.disabled = true;
+                submitBtn.textContent = 'Signing in...';
+            }
+        }
+        
+        function hideLoading() {
+            document.getElementById('loading').style.display = 'none';
+            const submitBtn = document.querySelector('.google-btn');
+            if (submitBtn) {
+                submitBtn.disabled = false;
+                submitBtn.innerHTML = '<i class="fab fa-google"></i> Sign in with Google';
+            }
+        }
+        
+        function showError(message) {
+            const errorDiv = document.getElementById('error-message');
+            errorDiv.textContent = message;
+            errorDiv.style.display = 'block';
+            setTimeout(() => {
+                errorDiv.style.display = 'none';
+            }, 5000);
+        }
+        
+        function showSuccess(message) {
+            const successDiv = document.getElementById('success-message');
+            successDiv.textContent = message;
+            successDiv.style.display = 'block';
+            successDiv.style.backgroundColor = '#4CAF50';
+            document.getElementById('error-message').style.display = 'none';
+            setTimeout(() => {
+                successDiv.style.display = 'none';
+            }, 3000);
+        }
+        
+        // Google OAuth handler
+        function handleGoogleSignIn(response) {
+            console.log('Google sign-in response received:', response);
+            
+            if (!response || !response.credential) {
+                showError('Invalid Google sign-in response');
+                return;
+            }
+            
+            showLoading();
+            
+            fetch('/api/auth/google', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    googleToken: response.credential
+                })
+            })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                return response.json();
+            })
+            .then(data => {
+                hideLoading();
+                if (data.token) {
+                    localStorage.setItem('token', data.token);
+                    showSuccess('Google sign-in successful!');
+                    
+                    setTimeout(() => {
+                        // Check if this is a new user or returning user
+                        const isNewUser = data.isNewUser || false;
+                        const userName = data.user.name;
+                        
+                        // Redirect to dashboard with welcome message
+                        const welcomeParam = encodeURIComponent(userName);
+                        const newUserParam = isNewUser ? '&new=true' : '';
+                        window.location.href = `/dashboard?welcome=${welcomeParam}${newUserParam}`;
+                    }, 1000);
+                } else {
+                    showError(data.message || 'Google sign-in failed');
+                }
+            })
+            .catch(error => {
+                hideLoading();
+                console.error('Google sign-in error:', error);
+                showError('Sign-in failed. Please try again.');
+            });
+        }
+        
+        // Initialize Google OAuth
+        function initializeGoogleAuth() {
+            // Fetch Google Client ID from backend
+            fetch('/api/config/google')
+                .then(response => response.json())
+                .then(config => {
+                    if (config.clientId && window.google) {
+                        window.google.accounts.id.initialize({
+                            client_id: config.clientId,
+                            callback: handleGoogleSignIn,
+                            auto_select: false,
+                            cancel_on_tap_outside: true
+                        });
+                        
+                        // Render the Google Sign-In button
+                        const googleBtnContainer = document.getElementById('google-signin-btn');
+                        if (googleBtnContainer) {
+                            window.google.accounts.id.renderButton(
+                                googleBtnContainer,
+                                {
+                                    theme: 'outline',
+                                    size: 'large',
+                                    width: '100%',
+                                    text: 'signin_with'
+                                }
+                            );
+                        }
+                    } else {
+                        console.warn('Google OAuth not available or client ID not configured');
+                        // Hide Google sign-in button if not configured
+                        const googleBtn = document.querySelector('.google-btn');
+                        if (googleBtn) {
+                            googleBtn.style.display = 'none';
+                        }
+                    }
+                })
+                .catch(error => {
+                    console.error('Failed to load Google OAuth config:', error);
+                    // Hide Google sign-in button on error
+                    const googleBtn = document.querySelector('.google-btn');
+                    if (googleBtn) {
+                        googleBtn.style.display = 'none';
+                    }
+                });
+        }
+        
+        // Initialize when page loads
+        document.addEventListener('DOMContentLoaded', function() {
+            // Check if already logged in
+            const token = localStorage.getItem('token');
+            if (token) {
+                window.location.href = '/';
+                return;
+            }
+            
+            // Wait for Google API to load
+            if (window.google) {
+                initializeGoogleAuth();
+            } else {
+                // Wait for Google API to load
+                window.addEventListener('load', () => {
+                    setTimeout(initializeGoogleAuth, 1000);
+                });
+            }
+        });
+    </script>
+</body>
+</html>

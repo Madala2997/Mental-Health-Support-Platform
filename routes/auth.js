@@ -6,6 +6,13 @@ const { auth } = require('../middleware/auth');
 
 const router = express.Router();
 
+// Google OAuth config endpoint
+router.get('/google-config', (req, res) => {
+  res.json({
+    clientId: process.env.GOOGLE_CLIENT_ID || null
+  });
+});
+
 // Register
 router.post('/register', [
   body('name').trim().isLength({ min: 2 }).withMessage('Name must be at least 2 characters'),

@@ -2,11 +2,13 @@
 let currentUser = null;
 let socket = null;
 let currentPage = 'home';
+let currentChatId = null;
 
 // Initialize app
 document.addEventListener('DOMContentLoaded', function() {
     initializeApp();
     setupEventListeners();
+    initializeMobileMenu();
     checkAuthStatus();
     initializeGoogleAuth();
 });
@@ -43,6 +45,23 @@ function setupEventListeners() {
             navMenu.classList.toggle('active');
         });
     }
+    
+    // Add logout event listeners
+    const logoutLink = document.getElementById('logout-link');
+    if (logoutLink) {
+        logoutLink.addEventListener('click', function(e) {
+            e.preventDefault();
+            logout();
+        });
+    }
+    
+    const logoutBtn = document.getElementById('logout-btn');
+    if (logoutBtn) {
+        logoutBtn.addEventListener('click', function(e) {
+            e.preventDefault();
+            logout();
+        });
+    }
 
     // Filter change listeners
     const resourceCategory = document.getElementById('resource-category');
@@ -74,18 +93,6 @@ function setupEventListeners() {
             if (e.key === 'Enter') sendMessage();
         });
     }
-}
-
-// Setup navigation
-function setupNavigation() {
-    const navLinks = document.querySelectorAll('.nav-link');
-    navLinks.forEach(link => {
-        link.addEventListener('click', (e) => {
-            e.preventDefault();
-            const page = link.getAttribute('data-page');
-            navigateToPage(page);
-        });
-    });
 }
 
 // Navigate to page
@@ -182,31 +189,76 @@ function updateUIForAuthenticatedUser() {
     if (currentUser.profile && currentUser.profile.avatar) {
         document.getElementById('user-avatar').src = currentUser.profile.avatar;
     }
+    
+    // Update mobile menu
+    updateMobileMenuForAuth();
 }
 
 function updateUIForUnauthenticatedUser() {
     document.getElementById('auth-buttons').style.display = 'flex';
     document.getElementById('nav-user').style.display = 'none';
+    
+    // Update mobile menu
+    updateMobileMenuForAuth();
 }
 
 // Google Auth initialization
 function initializeGoogleAuth() {
     if (typeof google !== 'undefined') {
-        google.accounts.id.initialize({
-            client_id: '495521740918-5egpfu7976co73dbgnr42bl0hn4v7gqa.apps.googleusercontent.com',
-            callback: handleGoogleSignIn
-        });
+        fetch('/api/config/google')
+            .then(response => response.json())
+            .then(config => {
+                const clientId = config.clientId;
+                if (clientId && clientId !== 'not-configured') {
+                    google.accounts.id.initialize({
+                        client_id: clientId,
+                        callback: handleGoogleSignIn,
+                        auto_select: false,
+                        cancel_on_tap_outside: true
+                    });
+                    
+                    // Render sign-in button on login page
+                    const googleSigninButton = document.getElementById('google-signin-button');
+                    if (googleSigninButton) {
+                        google.accounts.id.renderButton(googleSigninButton, {
+                            theme: 'outline',
+                            size: 'large',
+                            width: '100%'
+                        });
+                    }
+                    
+                    // Render sign-up button on signup page
+                    const googleSignupButton = document.getElementById('google-signup-button');
+                    if (googleSignupButton) {
+                        google.accounts.id.renderButton(googleSignupButton, {
+                            theme: 'outline',
+                            size: 'large',
+                            width: '100%'
+                        });
+                    }
+                } else {
+                    hideGoogleButtons();
+                }
+            })
+            .catch(error => {
+                console.error('Failed to load Google OAuth config:', error);
+                hideGoogleButtons();
+            });
+    } else {
+        console.log('Google Identity Services not loaded');
+        hideGoogleButtons();
+    }
+}
 
-        // Render sign-in buttons
-        google.accounts.id.renderButton(
-            document.getElementById('google-signin-button'),
-            { theme: 'outline', size: 'large', width: '100%' }
-        );
-
-        google.accounts.id.renderButton(
-            document.getElementById('google-signup-button'),
-            { theme: 'outline', size: 'large', width: '100%' }
-        );
+function hideGoogleButtons() {
+    const googleSigninButton = document.getElementById('google-signin-button');
+    const googleSignupButton = document.getElementById('google-signup-button');
+    
+    if (googleSigninButton) {
+        googleSigninButton.style.display = 'none';
+    }
+    if (googleSignupButton) {
+        googleSignupButton.style.display = 'none';
     }
 }
 
@@ -225,16 +277,22 @@ function handleGoogleSignIn(response) {
         if (data.token) {
             localStorage.setItem('token', data.token);
             currentUser = data.user;
-            updateUIForAuthenticatedUser();
-            closeAuthModal();
-            showToast('Welcome to MindMitra!', 'success');
+            
+            // Check if this is a new user or returning user
+            const isNewUser = data.isNewUser || false;
+            const userName = data.user.name;
+            
+            // Redirect to dashboard with welcome message
+            const welcomeParam = encodeURIComponent(userName);
+            const newUserParam = isNewUser ? '&new=true' : '';
+            window.location.href = `/dashboard?welcome=${welcomeParam}${newUserParam}`;
         } else {
-            showToast(data.message || 'Google sign-in not configured yet', 'warning');
+            showToast(data.message || 'Google sign-in failed', 'error');
         }
     })
     .catch(error => {
         console.error('Google sign-in error:', error);
-        showToast('Sign-in failed', 'error');
+        showToast('Sign-in failed. Please try again.', 'error');
     });
 }
 
@@ -474,7 +532,7 @@ function displayJournalEntries(entries) {
         entryDiv.innerHTML = `
             <div class="entry-header">
                 <div class="entry-author">
-                    <img src="https://via.placeholder.com/40" alt="Avatar">
+                    <img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='40' height='40' viewBox='0 0 40 40'%3E%3Ccircle cx='20' cy='20' r='20' fill='%23e0e0e0'/%3E%3Ctext x='20' y='25' text-anchor='middle' fill='%23666' font-size='14' font-family='Arial'%3E👤%3C/text%3E%3C/svg%3E" alt="Avatar">
                     <div>
                         <strong>${authorName}</strong>
                         <div class="entry-meta">${new Date(entry.createdAt).toLocaleDateString()}</div>
@@ -783,7 +841,7 @@ function displayChatConversations(chats) {
         
         chatDiv.innerHTML = `
             <div class="chat-preview">
-                <img src="https://via.placeholder.com/40" alt="Avatar">
+                <img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='40' height='40' viewBox='0 0 40 40'%3E%3Ccircle cx='20' cy='20' r='20' fill='%23e0e0e0'/%3E%3Ctext x='20' y='25' text-anchor='middle' fill='%23666' font-size='14' font-family='Arial'%3E👤%3C/text%3E%3C/svg%3E" alt="Avatar">
                 <div>
                     <strong>${partner ? partner.name : 'Chat'}</strong>
                     <div class="last-message">Click to open chat</div>
@@ -797,6 +855,7 @@ function displayChatConversations(chats) {
 }
 
 function openChatWindow(chat) {
+    currentChatId = chat._id;
     document.getElementById('chat-window').style.display = 'flex';
     
     const partner = chat.participants.find(p => p._id !== currentUser.id);
@@ -946,5 +1005,100 @@ window.onclick = function(event) {
     const modal = document.getElementById('auth-modal');
     if (event.target === modal) {
         closeAuthModal();
+    }
+}
+
+// Logout function
+function logout() {
+    localStorage.removeItem('token');
+    currentUser = null;
+    updateUIForUnauthenticatedUser();
+    closeMobileMenu();
+    window.location.href = '/';
+}
+
+// Mobile Menu Functions
+function initializeMobileMenu() {
+    const mobileMenuToggle = document.getElementById('mobile-menu-toggle');
+    const mobileMenu = document.getElementById('mobile-menu');
+    const mobileMenuOverlay = document.getElementById('mobile-menu-overlay');
+    const mobileLogoutLink = document.getElementById('mobile-logout-link');
+    
+    if (mobileMenuToggle) {
+        mobileMenuToggle.addEventListener('click', toggleMobileMenu);
+    }
+    
+    if (mobileMenuOverlay) {
+        mobileMenuOverlay.addEventListener('click', closeMobileMenu);
+    }
+    
+    if (mobileLogoutLink) {
+        mobileLogoutLink.addEventListener('click', function(e) {
+            e.preventDefault();
+            logout();
+        });
+    }
+    
+    // Close mobile menu when clicking on nav links
+    const mobileNavLinks = document.querySelectorAll('.mobile-menu .nav-link');
+    mobileNavLinks.forEach(link => {
+        link.addEventListener('click', () => {
+            closeMobileMenu();
+        });
+    });
+}
+
+function toggleMobileMenu() {
+    const mobileMenuToggle = document.getElementById('mobile-menu-toggle');
+    const mobileMenu = document.getElementById('mobile-menu');
+    const mobileMenuOverlay = document.getElementById('mobile-menu-overlay');
+    
+    if (mobileMenu && mobileMenuToggle) {
+        const isActive = mobileMenu.classList.contains('active');
+        
+        if (isActive) {
+            closeMobileMenu();
+        } else {
+            openMobileMenu();
+        }
+    }
+}
+
+function openMobileMenu() {
+    const mobileMenuToggle = document.getElementById('mobile-menu-toggle');
+    const mobileMenu = document.getElementById('mobile-menu');
+    const mobileMenuOverlay = document.getElementById('mobile-menu-overlay');
+    
+    if (mobileMenu && mobileMenuToggle && mobileMenuOverlay) {
+        mobileMenuToggle.classList.add('active');
+        mobileMenu.classList.add('active');
+        mobileMenuOverlay.style.display = 'block';
+        document.body.style.overflow = 'hidden';
+    }
+}
+
+function closeMobileMenu() {
+    const mobileMenuToggle = document.getElementById('mobile-menu-toggle');
+    const mobileMenu = document.getElementById('mobile-menu');
+    const mobileMenuOverlay = document.getElementById('mobile-menu-overlay');
+    
+    if (mobileMenu && mobileMenuToggle && mobileMenuOverlay) {
+        mobileMenuToggle.classList.remove('active');
+        mobileMenu.classList.remove('active');
+        mobileMenuOverlay.style.display = 'none';
+        document.body.style.overflow = '';
+    }
+}
+
+function updateMobileMenuForAuth() {
+    const mobileAuthSection = document.getElementById('mobile-auth-section');
+    const mobileUserSection = document.getElementById('mobile-user-section');
+    
+    if (currentUser) {
+        if (mobileAuthSection) mobileAuthSection.style.display = 'none';
+        if (mobileUserSection) mobileUserSection.style.display = 'block';
+    } else {
+        if (mobileAuthSection) mobileAuthSection.style.display = 'block';
+        if (mobileUserSection) mobileUserSection.style.display = 'none';
     }
 }

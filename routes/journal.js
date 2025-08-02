@@ -182,4 +182,15 @@ router.post('/:id/report', auth, async (req, res) => {
   }
 });
 
+// Get journal entry count for user
+router.get('/count', auth, async (req, res) => {
+  try {
+    const count = await Journal.countDocuments({ author: req.user._id });
+    res.json({ success: true, count });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ success: false, message: 'Server error' });
+  }
+});
+
 module.exports = router;

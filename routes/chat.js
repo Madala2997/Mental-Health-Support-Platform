@@ -208,4 +208,18 @@ router.get('/counselors/available', auth, async (req, res) => {
   }
 });
 
+// Get chat session count for user
+router.get('/count', auth, async (req, res) => {
+  try {
+    const count = await Chat.countDocuments({ 
+      participants: req.user._id,
+      isActive: true 
+    });
+    res.json({ success: true, count });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ success: false, message: 'Server error' });
+  }
+});
+
 module.exports = router;

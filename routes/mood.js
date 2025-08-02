@@ -127,10 +127,21 @@ router.get('/today', auth, async (req, res) => {
       date: { $gte: today }
     });
 
-    res.json(mood);
+    res.json({ success: true, mood });
   } catch (error) {
     console.error(error);
-    res.status(500).json({ message: 'Server error' });
+    res.status(500).json({ success: false, message: 'Server error' });
+  }
+});
+
+// Get mood entry count for user
+router.get('/count', auth, async (req, res) => {
+  try {
+    const count = await Mood.countDocuments({ user: req.user._id });
+    res.json({ success: true, count });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ success: false, message: 'Server error' });
   }
 });
 

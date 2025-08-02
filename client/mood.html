@@ -1,0 +1,359 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mood Tracker - MindMitra</title>
+    <link rel="stylesheet" href="/styles.css">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+    <nav class="navbar">
+        <div class="nav-container">
+            <div class="nav-brand">
+                <i class="fas fa-heart"></i>
+                <span>MindMitra</span>
+            </div>
+            <div class="nav-menu">
+                <a href="/" class="nav-link">Home</a>
+                <a href="/resources" class="nav-link">Resources</a>
+                <a href="/journal" class="nav-link">Journal</a>
+                <a href="/forum" class="nav-link">Forum</a>
+                <a href="/mood" class="nav-link active">Mood Tracker</a>
+                <a href="/chat" class="nav-link">Chat</a>
+                <a href="/profile" class="nav-link">Profile</a>
+            </div>
+            <div class="nav-user" id="nav-user" style="display: none;">
+                <img id="user-avatar" src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%23667eea'%3E%3Cpath d='M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z'/%3E%3C/svg%3E" alt="User Avatar" class="user-avatar">
+                <span id="user-name">User</span>
+                <button id="logout-btn" class="btn btn-outline btn-small">Logout</button>
+            </div>
+            <div class="auth-buttons" id="auth-buttons">
+                <a href="/login" class="btn btn-outline">Login</a>
+                <a href="/signup" class="btn btn-primary">Sign Up</a>
+            </div>
+        </div>
+    </nav>
+
+    <main class="main-content">
+        <div class="page-header">
+            <div class="container">
+                <h1><i class="fas fa-chart-line"></i> Mood Tracker</h1>
+                <p>Track your daily mood and see patterns over time</p>
+            </div>
+        </div>
+
+        <section class="mood-section">
+            <div class="container">
+                <div class="mood-tracker-grid">
+                    <!-- Today's Mood -->
+                    <div class="mood-card">
+                        <h2>How are you feeling today?</h2>
+                        <div class="mood-selector">
+                            <div class="mood-options">
+                                <button class="mood-btn" data-mood="very-happy" data-value="5">
+                                    <span class="mood-emoji">😄</span>
+                                    <span class="mood-label">Very Happy</span>
+                                </button>
+                                <button class="mood-btn" data-mood="happy" data-value="4">
+                                    <span class="mood-emoji">😊</span>
+                                    <span class="mood-label">Happy</span>
+                                </button>
+                                <button class="mood-btn" data-mood="neutral" data-value="3">
+                                    <span class="mood-emoji">😐</span>
+                                    <span class="mood-label">Neutral</span>
+                                </button>
+                                <button class="mood-btn" data-mood="sad" data-value="2">
+                                    <span class="mood-emoji">😔</span>
+                                    <span class="mood-label">Sad</span>
+                                </button>
+                                <button class="mood-btn" data-mood="very-sad" data-value="1">
+                                    <span class="mood-emoji">😢</span>
+                                    <span class="mood-label">Very Sad</span>
+                                </button>
+                            </div>
+                        </div>
+                        
+                        <div class="mood-notes" style="display: none;">
+                            <textarea id="mood-notes" placeholder="Add a note about your mood (optional)..."></textarea>
+                            <div class="mood-actions">
+                                <button id="save-mood" class="btn btn-primary">
+                                    <i class="fas fa-save"></i> Save Mood
+                                </button>
+                                <button id="cancel-mood" class="btn btn-outline">Cancel</button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Mood Chart -->
+                    <div class="mood-card">
+                        <h2>Your Mood Trends</h2>
+                        <div class="chart-container">
+                            <canvas id="mood-chart"></canvas>
+                        </div>
+                        <div class="chart-controls">
+                            <button class="chart-btn active" data-period="7">7 Days</button>
+                            <button class="chart-btn" data-period="30">30 Days</button>
+                            <button class="chart-btn" data-period="90">90 Days</button>
+                        </div>
+                    </div>
+
+                    <!-- Mood Statistics -->
+                    <div class="mood-card">
+                        <h2>Mood Statistics</h2>
+                        <div class="mood-stats" id="mood-stats">
+                            <!-- Stats will be loaded here -->
+                        </div>
+                    </div>
+
+                    <!-- Recent Entries -->
+                    <div class="mood-card">
+                        <h2>Recent Mood Entries</h2>
+                        <div class="mood-history" id="mood-history">
+                            <!-- Recent entries will be loaded here -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <div id="loading" class="loading" style="display: none;">
+        <div class="spinner"></div>
+    </div>
+
+    <script src="/script.js"></script>
+    <script>
+        let selectedMood = null;
+        let moodChart = null;
+
+        document.addEventListener('DOMContentLoaded', function() {
+            initializeApp();
+            loadMoodData();
+            initializeMoodChart();
+            
+            // Mood selection
+            document.querySelectorAll('.mood-btn').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    document.querySelectorAll('.mood-btn').forEach(b => b.classList.remove('selected'));
+                    this.classList.add('selected');
+                    selectedMood = {
+                        mood: this.dataset.mood,
+                        value: parseInt(this.dataset.value)
+                    };
+                    document.querySelector('.mood-notes').style.display = 'block';
+                });
+            });
+            
+            // Save mood
+            document.getElementById('save-mood').addEventListener('click', saveMood);
+            document.getElementById('cancel-mood').addEventListener('click', cancelMoodSelection);
+            
+            // Chart period controls
+            document.querySelectorAll('.chart-btn').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    document.querySelectorAll('.chart-btn').forEach(b => b.classList.remove('active'));
+                    this.classList.add('active');
+                    updateMoodChart(parseInt(this.dataset.period));
+                });
+            });
+        });
+
+        function saveMood() {
+            if (!selectedMood) {
+                alert('Please select a mood first.');
+                return;
+            }
+
+            const notes = document.getElementById('mood-notes').value;
+            
+            const moodEntry = {
+                mood: selectedMood.mood,
+                value: selectedMood.value,
+                notes: notes.trim(),
+                date: new Date().toISOString()
+            };
+
+            fetch('/api/mood', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${localStorage.getItem('token')}`
+                },
+                body: JSON.stringify(moodEntry)
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    alert('Mood saved successfully!');
+                    cancelMoodSelection();
+                    loadMoodData();
+                    updateMoodChart(7);
+                } else {
+                    alert('Failed to save mood. Please try again.');
+                }
+            })
+            .catch(error => {
+                console.error('Error saving mood:', error);
+                alert('Failed to save mood. Please try again.');
+            });
+        }
+
+        function cancelMoodSelection() {
+            selectedMood = null;
+            document.querySelectorAll('.mood-btn').forEach(b => b.classList.remove('selected'));
+            document.querySelector('.mood-notes').style.display = 'none';
+            document.getElementById('mood-notes').value = '';
+        }
+
+        function loadMoodData() {
+            fetch('/api/mood', {
+                headers: {
+                    'Authorization': `Bearer ${localStorage.getItem('token')}`
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    displayMoodStats(data.stats);
+                    displayMoodHistory(data.recent);
+                }
+            })
+            .catch(error => {
+                console.error('Error loading mood data:', error);
+            });
+        }
+
+        function displayMoodStats(stats) {
+            const container = document.getElementById('mood-stats');
+            
+            if (!stats) {
+                container.innerHTML = '<p>No mood data available yet.</p>';
+                return;
+            }
+
+            container.innerHTML = `
+                <div class="stat-item">
+                    <div class="stat-value">${stats.totalEntries || 0}</div>
+                    <div class="stat-label">Total Entries</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-value">${stats.averageMood || 'N/A'}</div>
+                    <div class="stat-label">Average Mood</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-value">${stats.streak || 0}</div>
+                    <div class="stat-label">Day Streak</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-value">${stats.mostCommonMood || 'N/A'}</div>
+                    <div class="stat-label">Most Common</div>
+                </div>
+            `;
+        }
+
+        function displayMoodHistory(entries) {
+            const container = document.getElementById('mood-history');
+            
+            if (!entries || entries.length === 0) {
+                container.innerHTML = '<p>No mood entries yet. Start tracking your mood!</p>';
+                return;
+            }
+
+            container.innerHTML = entries.slice(0, 5).map(entry => `
+                <div class="mood-entry">
+                    <div class="entry-mood">${getMoodEmoji(entry.mood)}</div>
+                    <div class="entry-details">
+                        <div class="entry-date">${formatDate(entry.date)}</div>
+                        ${entry.notes ? `<div class="entry-notes">${entry.notes}</div>` : ''}
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function initializeMoodChart() {
+            const ctx = document.getElementById('mood-chart').getContext('2d');
+            moodChart = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: [],
+                    datasets: [{
+                        label: 'Mood',
+                        data: [],
+                        borderColor: '#667eea',
+                        backgroundColor: 'rgba(102, 126, 234, 0.1)',
+                        borderWidth: 2,
+                        fill: true,
+                        tension: 0.4
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            max: 5,
+                            ticks: {
+                                stepSize: 1,
+                                callback: function(value) {
+                                    const moodLabels = ['', 'Very Sad', 'Sad', 'Neutral', 'Happy', 'Very Happy'];
+                                    return moodLabels[value] || '';
+                                }
+                            }
+                        }
+                    },
+                    plugins: {
+                        legend: {
+                            display: false
+                        }
+                    }
+                }
+            });
+            
+            updateMoodChart(7);
+        }
+
+        function updateMoodChart(days) {
+            fetch(`/api/mood/chart?days=${days}`, {
+                headers: {
+                    'Authorization': `Bearer ${localStorage.getItem('token')}`
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success && moodChart) {
+                    moodChart.data.labels = data.labels;
+                    moodChart.data.datasets[0].data = data.values;
+                    moodChart.update();
+                }
+            })
+            .catch(error => {
+                console.error('Error updating mood chart:', error);
+            });
+        }
+
+        function getMoodEmoji(mood) {
+            const moodEmojis = {
+                'very-happy': '😄',
+                'happy': '😊',
+                'neutral': '😐',
+                'sad': '😔',
+                'very-sad': '😢'
+            };
+            return moodEmojis[mood] || '😐';
+        }
+
+        function formatDate(dateString) {
+            return new Date(dateString).toLocaleDateString('en-US', {
+                month: 'short',
+                day: 'numeric',
+                hour: '2-digit',
+                minute: '2-digit'
+            });
+        }
+    </script>
+</body>
+</html>
